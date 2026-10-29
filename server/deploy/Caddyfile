@@ -1,0 +1,14 @@
+# {$DOMAIN} comes from deploy/.env (docker compose passes it to the container).
+# Caddy fetches and renews the HTTPS certificate by itself (ports 80 and 443 must be open).
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 1MB
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	reverse_proxy api:3000
+}

@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-dev
+dist-online
+.env
+.DS_Store
+coverage
+.deploy-target
+
+# AI agent work logs and build artifacts (not part of the public repo)
+.agents/
+release/

@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS 450: Machine Learning - State University Brightspace</title>
+  <style>
+    :root {
+      --d2l-primary: #006fbf;
+      --d2l-primary-hover: #005694;
+      --d2l-bg: #f9fbff;
+      --d2l-surface: #ffffff;
+      --d2l-border: #e3e9f0;
+      --d2l-text: #202124;
+      --d2l-text-muted: #5f6368;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--d2l-bg);
+      color: var(--d2l-text);
+      line-height: 1.5;
+    }
+
+    /* Mock Test Controls Floating Toolbar */
+    #mock-test-controls {
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 10px 16px;
+      border-bottom: 2px solid #3b82f6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 12px;
+    }
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .mock-controls-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .mock-controls-grid label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #cbd5e1;
+    }
+    .mock-controls-grid select, .mock-controls-grid button {
+      background: #334155;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .mock-controls-grid button {
+      background: #2563eb;
+      border-color: #3b82f6;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .mock-controls-grid button:hover { background: #1d4ed8; }
+    .mock-audit-details {
+      margin-top: 8px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 6px 10px;
+    }
+    .mock-audit-details summary { cursor: pointer; color: #94a3b8; font-weight: 500; }
+    .audit-log-container {
+      max-height: 120px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 10px;
+      color: #38bdf8;
+      margin-top: 6px;
+      white-space: pre-wrap;
+    }
+
+    /* D2L Daylight Header */
+    .d2l-navigation {
+      background: var(--d2l-surface);
+      border-bottom: 1px solid var(--d2l-border);
+      padding: 10px 24px;
+    }
+    .d2l-nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .d2l-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 16px;
+    }
+    .d2l-user-tools {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--d2l-text-muted);
+    }
+    .d2l-user-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--d2l-text);
+    }
+    .d2l-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--d2l-primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Course Banner */
+    .d2l-course-banner {
+      background: linear-gradient(135deg, #006fbf 0%, #0284c7 100%);
+      color: white;
+      padding: 32px 24px;
+    }
+    .d2l-banner-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .d2l-breadcrumb { font-size: 12px; color: #bae6fd; margin-bottom: 6px; }
+    .d2l-course-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .d2l-course-meta { display: flex; gap: 16px; font-size: 12px; color: #e0f2fe; }
+
+    /* Course Nav */
+    .d2l-course-nav {
+      background: white;
+      border-bottom: 1px solid var(--d2l-border);
+      padding: 0 24px;
+    }
+    .d2l-nav-links {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 24px;
+    }
+    .nav-item {
+      padding: 12px 0;
+      text-decoration: none;
+      color: var(--d2l-text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+    }
+    .nav-item.active {
+      color: var(--d2l-primary);
+      border-bottom-color: var(--d2l-primary);
+    }
+
+    /* Main Grid */
+    .d2l-page-main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    .d2l-grid-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+    .d2l-card {
+      background: white;
+      border: 1px solid var(--d2l-border);
+      border-radius: 8px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .d2l-card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--d2l-border);
+      background: #fbfcfe;
+    }
+    .d2l-card-header h2 { font-size: 15px; font-weight: 700; color: #1e293b; }
+    .d2l-card-body { padding: 18px; font-size: 13px; }
+    .news-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; }
+    .news-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .news-item h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .news-item time { font-size: 11px; color: var(--d2l-text-muted); display: block; margin-bottom: 6px; }
+    .toc-list, .event-list { list-style: none; space-y: 8px; }
+    .toc-list li, .event-list li {
+      padding: 8px 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .grade-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .grade-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body class="d2l-body">
+  <!-- 1. Interactive Mock Test Controls Floating Toolbar -->
+  <aside id="mock-test-controls" aria-label="Mock Test Controls">
+    <div class="mock-header">
+      <span>🧪 <strong>D2L Brightspace Mock Environment</strong></span>
+      <span id="extension-status-badge" style="background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;">Active Offline</span>
+    </div>
+    <div class="mock-controls-grid">
+      <label>
+        Course:
+        <select id="control-course-select">
+          <option value="88421" selected>CS 450: Machine Learning (88421)</option>
+          <option value="99102">CS 480: Distributed Systems (99102)</option>
+          <option value="77005">MATH 320: Linear Algebra (77005)</option>
+        </select>
+      </label>
+      <label>
+        Auth State:
+        <select id="control-auth-select">
+          <option value="200" selected>Authenticated (200 OK)</option>
+          <option value="401">Logged Out / Expired (401)</option>
+        </select>
+      </label>
+      <label>
+        Grades Access:
+        <select id="control-grades-select">
+          <option value="200" selected>Accessible (200 OK)</option>
+          <option value="403">Restricted by Instructor (403)</option>
+        </select>
+      </label>
+      <label>
+        Rate Limit:
+        <select id="control-ratelimit-select">
+          <option value="200" selected>Normal (200 OK)</option>
+          <option value="429">Rate Limited (429)</option>
+        </select>
+      </label>
+      <label>
+        Latency:
+        <select id="control-latency-select">
+          <option value="0" selected>0 ms (Instant)</option>
+          <option value="300">300 ms</option>
+          <option value="1200">1200 ms (Slow)</option>
+        </select>
+      </label>
+      <div class="mock-actions">
+        <button id="btn-trigger-hotkey" type="button">Trigger Alt+B Hotkey</button>
+        <button id="btn-clear-cache" type="button">Reset Storage</button>
+      </div>
+    </div>
+    <!-- Live API Audit Console -->
+    <details class="mock-audit-details" open>
+      <summary>Live Valence API Audit Log (<span id="api-call-count">0</span> calls)</summary>
+      <div id="mock-audit-log" class="audit-log-container">Initializing API Interceptor...</div>
+    </details>
+  </aside>
+
+  <!-- 2. D2L Daylight Primary Navigation Header -->
+  <header class="d2l-navigation">
+    <div class="d2l-nav-inner">
+      <div class="d2l-brand">
+        <span class="d2l-logo-icon">🎓</span>
+        <span class="d2l-institution-name">State University</span>
+        <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+        <span class="d2l-system-title">Brightspace</span>
+      </div>
+      <div class="d2l-user-tools">
+        <span class="d2l-tool-icon" title="Course Selector" style="cursor: pointer;">▦</span>
+        <span class="d2l-tool-icon" title="Notifications" style="cursor: pointer;">🔔</span>
+        <div class="d2l-user-profile">
+          <span class="d2l-avatar">AS</span>
+          <span class="d2l-username">Alex Student</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. Course Title Banner & Metadata -->
+  <section class="d2l-course-banner">
+    <div class="d2l-banner-content">
+      <nav class="d2l-breadcrumb">My Home &gt; Fall 2026 &gt; Computer Science</nav>
+      <h1 id="course-title-heading" class="d2l-course-title">CS 450: Machine Learning (Fall 2026)</h1>
+      <div class="d2l-course-meta">
+        <span class="meta-tag">Course Code: <strong>CS-450-2026</strong></span>
+        <span class="meta-tag">OrgUnitId: <strong id="course-ou-display">88421</strong></span>
+        <span class="meta-tag">Instructor: <strong>Prof. Alan Turing</strong></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Course Navbar Tabs -->
+  <nav class="d2l-course-nav">
+    <div class="d2l-nav-links">
+      <a href="/d2l/home/88421" class="nav-item active">Course Home</a>
+      <a href="/d2l/le/content/88421/Home" class="nav-item">Content</a>
+      <a href="/d2l/lms/dropbox/user/folders_list.d2l?ou=88421" class="nav-item">Assignments</a>
+      <a href="/d2l/lms/quizzing/user/quizzes_list.d2l?ou=88421" class="nav-item">Quizzes</a>
+      <a href="/d2l/lms/grades/my_grades/main.d2l?ou=88421" class="nav-item">Grades</a>
+      <a href="/d2l/lms/classlist/classlist.d2l?ou=88421" class="nav-item">Classlist</a>
+    </div>
+  </nav>
+
+  <!-- 5. Main Dashboard Content Grid -->
+  <main class="d2l-page-main">
+    <div class="d2l-grid-container">
+      <!-- Left Column (Primary Widgets) -->
+      <div class="d2l-col-primary">
+        <!-- Overview Widget -->
+        <article class="d2l-card" id="widget-overview">
+          <header class="d2l-card-header"><h2>📖 Course Overview & Syllabus</h2></header>
+          <div class="d2l-card-body" id="overview-content">
+            <p>Welcome to CS 450! This course covers foundational supervised and unsupervised learning algorithms including gradient descent, linear and logistic regression, neural network architectures, and backpropagation.</p>
+          </div>
+        </article>
+
+        <!-- Announcements Widget -->
+        <article class="d2l-card" id="widget-news">
+          <header class="d2l-card-header"><h2>📢 Announcements</h2></header>
+          <div class="d2l-card-body">
+            <div class="news-item">
+              <h3>Welcome to CS 450 (Fall 2026)</h3>
+              <time datetime="2026-09-02">Posted Sep 2, 2026 8:00 AM</time>
+              <p>Please review the syllabus and install Python 3.11 with PyTorch 2.4 before Thursday's lab.</p>
+            </div>
+            <div class="news-item">
+              <h3>Assignment 1 Released: Gradient Descent from Scratch</h3>
+              <time datetime="2026-10-10">Posted Oct 10, 2026 12:00 PM</time>
+              <p>Assignment 1 is now available in Dropbox. Due Sunday, Oct 25 at 23:59.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Content Modules Widget -->
+        <article class="d2l-card" id="widget-toc">
+          <header class="d2l-card-header"><h2>📁 Course Content & Modules</h2></header>
+          <div class="d2l-card-body">
+            <ul class="toc-list">
+              <li><span>📄 CS 450 Syllabus & Schedule.pdf</span> <span class="badge">PDF</span></li>
+              <li><span>📄 Academic Integrity & Collaboration Policy.docx</span> <span class="badge">DOCX</span></li>
+              <li><span>📊 Lecture 1: Gradient Descent & Convex Loss.pptx</span> <span class="badge">PPTX</span></li>
+              <li><span>🌐 Math Prerequisites: Vector Calculus.html</span> <span class="badge">HTML</span></li>
+              <li><span>📊 Lecture 2: Multilayer Perceptrons & Backpropagation.pptx</span> <span class="badge">PPTX</span></li>
+              <li><span>📄 Lab 1 Guide: PyTorch Tensors.pdf</span> <span class="badge">PDF</span></li>
+            </ul>
+          </div>
+        </article>
+      </div>
+
+      <!-- Right Column (Sidebar Widgets) -->
+      <div class="d2l-col-secondary">
+        <!-- Deadlines / Calendar Widget -->
+        <article class="d2l-card" id="widget-calendar">
+          <header class="d2l-card-header"><h2>📅 Calendar & Deadlines</h2></header>
+          <div class="d2l-card-body">
+            <ul class="event-list">
+              <li><div><strong>Assignment 1 Due</strong><br><span style="font-size: 11px; color: #64748b;">Oct 25, 2026 23:59</span></div></li>
+              <li><div><strong>Project Milestone 1 Due</strong><br><span style="font-size: 11px; color: #64748b;">Oct 28, 2026 22:00</span></div></li>
+              <li><div><strong>Midterm Review Session</strong><br><span style="font-size: 11px; color: #64748b;">Nov 03, 2026 15:00</span></div></li>
+              <li><div><strong>Midterm Exam</strong><br><span style="font-size: 11px; color: #64748b;">Nov 05, 2026 18:00</span></div></li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- Grades Summary Widget -->
+        <article class="d2l-card" id="widget-grades">
+          <header class="d2l-card-header"><h2>📊 Recent Grades</h2></header>
+          <div class="d2l-card-body">
+            <div class="grade-item">
+              <span>Quiz 1: Math & Optimization</span>
+              <strong>19 / 20 (95%)</strong>
+            </div>
+            <div class="grade-item">
+              <span>Assignment 1: Gradient Descent</span>
+              <strong>92 / 100 (92%)</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- Mock Configuration & Datasets ---
+    const mockState = {
+      activeCourseId: '88421',
+      authStatus: 200,
+      gradesStatus: 200,
+      rateLimitStatus: 200,
+      latency: 0,
+      callCount: 0,
+    };
+
+    const COURSES_DATA = {
+      '88421': {
+        name: 'CS 450: Machine Learning',
+        code: 'CS-450-2026',
+        overview: {
+          Title: 'CS 450: Machine Learning - Course Overview',
+          Body: {
+            Html: '<h2>Welcome to CS 450</h2><p>This course covers fundamental supervised and unsupervised learning algorithms including gradient descent, linear and logistic regression, neural network architectures, and backpropagation.</p>',
+            Text: 'Welcome to CS 450\nThis course covers fundamental supervised and unsupervised learning algorithms including gradient descent, linear and logistic regression, neural network architectures, and backpropagation.'
+          }
+        },
+        toc: {
+          Modules: [
+            {
+              ModuleId: 1001,
+              Title: 'Course Information & Syllabus',
+              Description: { Html: '<p>Essential documentation and policies.</p>', Text: 'Essential documentation and policies.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2001, Identifier: '2001', Title: 'CS 450 Syllabus & Schedule.pdf', TypeIdentifier: 'file', Url: '/content/enforced/88421/Syllabus.pdf' },
+                { TopicId: 2002, Identifier: '2002', Title: 'Academic Integrity & Collaboration Policy.docx', TypeIdentifier: 'file', Url: '/content/enforced/88421/Integrity_Policy.docx' }
+              ]
+            },
+            {
+              ModuleId: 1002,
+              Title: 'Week 1: Foundations of Optimization',
+              Description: { Html: '<p>Lecture slides and math prep.</p>', Text: 'Lecture slides and math prep.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2003, Identifier: '2003', Title: 'Lecture 1: Gradient Descent & Convex Loss.pptx', TypeIdentifier: 'file', Url: '/content/enforced/88421/Lecture1_Gradient_Descent.pptx' },
+                { TopicId: 2004, Identifier: '2004', Title: 'Math Prerequisites: Vector Calculus.html', TypeIdentifier: 'html', Url: '/content/enforced/88421/Math_Prerequisites.html' }
+              ]
+            },
+            {
+              ModuleId: 1003,
+              Title: 'Week 2: Neural Networks & Backprop',
+              Description: { Html: '<p>Multilayer perceptrons and PyTorch.</p>', Text: 'Multilayer perceptrons and PyTorch.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2005, Identifier: '2005', Title: 'Lecture 2: Multilayer Perceptrons & Backpropagation.pptx', TypeIdentifier: 'file', Url: '/content/enforced/88421/Lecture2_MLP.pptx' },
+                { TopicId: 2006, Identifier: '2006', Title: 'Lab 1 Guide: PyTorch Tensors.pdf', TypeIdentifier: 'file', Url: '/content/enforced/88421/Lab1_PyTorch.pdf' }
+              ]
+            }
+          ]
+        },
+        news: [
+          { Id: 3001, Title: 'Welcome to CS 450 (Fall 2026)', Body: { Html: '<p>Please review the syllabus and install PyTorch 2.4.</p>', Text: 'Please review the syllabus and install PyTorch 2.4.' }, StartDate: '2026-09-02T08:00:00.000Z' },
+          { Id: 3002, Title: 'Assignment 1 Released: Gradient Descent', Body: { Html: '<p>Assignment 1 is available in Dropbox. Due Oct 25 at 23:59.</p>', Text: 'Assignment 1 is available in Dropbox. Due Oct 25 at 23:59.' }, StartDate: '2026-10-10T12:00:00.000Z' }
+        ],
+        dropbox: [
+          {
+            Id: 4001,
+            Name: 'Assignment 1: Gradient Descent & Linear Regression',
+            CustomInstructions: { Html: '<p>Implement batch and stochastic gradient descent in Python.</p>', Text: 'Implement batch and stochastic gradient descent in Python.' },
+            DueDate: '2026-10-25T23:59:00.000Z',
+            Assessment: { Rubrics: [{ Name: 'Code Correctness & Efficiency' }] }
+          }
+        ],
+        quizzes: [
+          { QuizId: 5001, Name: 'Quiz 1: Math & Optimization Prerequisites', DueDate: '2026-10-15T23:59:00.000Z', AttemptsAllowed: 2 }
+        ],
+        calendar: [
+          { CalendarEventId: 6001, Title: 'Assignment 1 Due', Description: { Text: 'Submit to Dropbox before 23:59.' }, StartDateTime: '2026-10-25T23:59:00.000Z' }
+        ],
+        grades: [
+          { GradeObjectIdentifier: 7001, GradeObjectName: 'Quiz 1: Math & Optimization', PointsNumerator: 19, PointsDenominator: 20, GradeText: '95%', Comments: { Text: 'Great mastery of vector derivatives.' } },
+          { GradeObjectIdentifier: 7002, GradeObjectName: 'Assignment 1: Gradient Descent', PointsNumerator: 92, PointsDenominator: 100, GradeText: '92%', Comments: { Text: 'Clean vectorized code; check learning rate schedule.' } }
+        ]
+      },
+      '99102': {
+        name: 'CS 480: Distributed Systems',
+        code: 'CS-480-2026',
+        overview: {
+          Title: 'CS 480: Distributed Systems - Course Overview',
+          Body: {
+            Html: '<h2>Welcome to CS 480</h2><p>This course explores concurrency, consensus protocols (Paxos, Raft), distributed transactions, replication, and fault-tolerant storage systems.</p>',
+            Text: 'Welcome to CS 480\nThis course explores concurrency, consensus protocols (Paxos, Raft), distributed transactions, replication, and fault-tolerant storage systems.'
+          }
+        },
+        toc: {
+          Modules: [
+            {
+              ModuleId: 1101,
+              Title: 'Week 1: Clocks, Time & Ordering',
+              Description: { Html: '<p>Logical clocks and happens-before relations.</p>', Text: 'Logical clocks and happens-before relations.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2101, Identifier: '2101', Title: 'CS 480 Syllabus & Reading List.pdf', TypeIdentifier: 'file', Url: '/content/enforced/99102/Syllabus_CS480.pdf' },
+                { TopicId: 2102, Identifier: '2102', Title: 'Lamport Clocks & Vector Clocks.pptx', TypeIdentifier: 'file', Url: '/content/enforced/99102/Lecture1_Clocks.pptx' }
+              ]
+            },
+            {
+              ModuleId: 1102,
+              Title: 'Week 2: Consensus & Raft Protocol',
+              Description: { Html: '<p>Leader election and log replication.</p>', Text: 'Leader election and log replication.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2103, Identifier: '2103', Title: 'In Search of an Understandable Consensus Algorithm (Raft).pdf', TypeIdentifier: 'file', Url: '/content/enforced/99102/Raft_Paper.pdf' },
+                { TopicId: 2104, Identifier: '2104', Title: 'Lab 1: MapReduce in Go.docx', TypeIdentifier: 'file', Url: '/content/enforced/99102/Lab1_MapReduce.docx' }
+              ]
+            }
+          ]
+        },
+        news: [
+          { Id: 3101, Title: 'Go 1.23 Required for Distributed Labs', Body: { Html: '<p>Ensure Go 1.23+ is installed before cloning the Raft lab repository.</p>', Text: 'Ensure Go 1.23+ is installed before cloning the Raft lab repository.' }, StartDate: '2026-09-03T09:00:00.000Z' }
+        ],
+        dropbox: [
+          {
+            Id: 4101,
+            Name: 'Lab 1: Distributed MapReduce Coordinator & Worker',
+            CustomInstructions: { Html: '<p>Implement RPC worker coordination and fault recovery.</p>', Text: 'Implement RPC worker coordination and fault recovery.' },
+            DueDate: '2026-10-27T23:59:00.000Z',
+            Assessment: { Rubrics: [{ Name: 'Fault Tolerance & Race Detector' }] }
+          }
+        ],
+        quizzes: [
+          { QuizId: 5101, Name: 'Quiz 1: Lamport Timestamps & Causal Ordering', DueDate: '2026-10-22T23:59:00.000Z', AttemptsAllowed: 2 }
+        ],
+        calendar: [
+          { CalendarEventId: 6101, Title: 'Lab 1 Due: MapReduce', Description: { Text: 'Pass all go test -race checks.' }, StartDateTime: '2026-10-27T23:59:00.000Z' }
+        ],
+        grades: [
+          { GradeObjectIdentifier: 7101, GradeObjectName: 'Quiz 1: Lamport Timestamps', PointsNumerator: 18, PointsDenominator: 20, GradeText: '90%', Comments: { Text: 'Solid vector clock trace.' } }
+        ]
+      },
+      '77005': {
+        name: 'MATH 320: Linear Algebra',
+        code: 'MATH-320-2026',
+        overview: {
+          Title: 'MATH 320: Linear Algebra - Course Overview',
+          Body: {
+            Html: '<h2>Welcome to MATH 320</h2><p>Vector spaces, linear transformations,lu decomposition, orthogonality, eigenvalues, eigenvectors, and Singular Value Decomposition (SVD).</p>',
+            Text: 'Welcome to MATH 320\nVector spaces, linear transformations, LU decomposition, orthogonality, eigenvalues, eigenvectors, and Singular Value Decomposition (SVD).'
+          }
+        },
+        toc: {
+          Modules: [
+            {
+              ModuleId: 1201,
+              Title: 'Unit 1: Vector Spaces & Subspaces',
+              Description: { Html: '<p>Basis, dimension, and rank-nullity theorem.</p>', Text: 'Basis, dimension, and rank-nullity theorem.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2201, Identifier: '2201', Title: 'MATH 320 Course Syllabus.pdf', TypeIdentifier: 'file', Url: '/content/enforced/77005/Syllabus_MATH320.pdf' },
+                { TopicId: 2202, Identifier: '2202', Title: 'Lecture Notes: Nullspace, Column Space & Rank.pdf', TypeIdentifier: 'file', Url: '/content/enforced/77005/Notes_Subspaces.pdf' }
+              ]
+            },
+            {
+              ModuleId: 1202,
+              Title: 'Unit 2: Eigenvalues & Singular Value Decomposition',
+              Description: { Html: '<p>Diagonalization and spectral theorem.</p>', Text: 'Diagonalization and spectral theorem.' },
+              Modules: [],
+              Topics: [
+                { TopicId: 2203, Identifier: '2203', Title: 'Slides: Spectral Theorem & SVD Applications.pptx', TypeIdentifier: 'file', Url: '/content/enforced/77005/SVD_Slides.pptx' },
+                { TopicId: 2204, Identifier: '2204', Title: 'Problem Set 3: Characteristic Polynomials.pdf', TypeIdentifier: 'file', Url: '/content/enforced/77005/ProblemSet3.pdf' }
+              ]
+            }
+          ]
+        },
+        news: [
+          { Id: 3201, Title: 'Midterm Formula Sheet Policy', Body: { Html: '<p>No calculators needed; all arithmetic is small-integer.</p>', Text: 'No calculators needed; all arithmetic is small-integer.' }, StartDate: '2026-09-05T10:00:00.000Z' }
+        ],
+        dropbox: [
+          {
+            Id: 4201,
+            Name: 'Problem Set 3: Eigenvalues & Diagonalization',
+            CustomInstructions: { Html: '<p>Submit typeset LaTeX or clear scan as PDF.</p>', Text: 'Submit typeset LaTeX or clear scan as PDF.' },
+            DueDate: '2026-10-29T23:59:00.000Z',
+            Assessment: { Rubrics: [{ Name: 'Proof Rigor & Completeness' }] }
+          }
+        ],
+        quizzes: [
+          { QuizId: 5201, Name: 'Concept Check: Orthogonality & Gram-Schmidt', DueDate: '2026-10-24T23:59:00.000Z', AttemptsAllowed: 3 }
+        ],
+        calendar: [
+          { CalendarEventId: 6201, Title: 'Problem Set 3 Due', Description: { Text: 'Upload PDF to Dropbox.' }, StartDateTime: '2026-10-29T23:59:00.000Z' }
+        ],
+        grades: [
+          { GradeObjectIdentifier: 7201, GradeObjectName: 'Problem Set 1: Gaussian Elimination', PointsNumerator: 48, PointsDenominator: 50, GradeText: '96%', Comments: { Text: 'Clear row reduction steps.' } }
+        ]
+      }
+    };
+
+    // Logging helper
+    function logApiCall(method, path, status) {
+      mockState.callCount++;
+      document.getElementById('api-call-count').textContent = mockState.callCount;
+      const log = document.getElementById('mock-audit-log');
+      const time = new Date().toLocaleTimeString();
+      const statusColor = status >= 200 && status < 300 ? '#4ade80' : status === 403 ? '#facc15' : '#f87171';
+      log.textContent = `[${time}] ${method} ${path} -> ${status}\n` + log.textContent;
+    }
+
+    // --- In-Page Fetch Interceptor ---
+    const originalFetch = window.fetch;
+    window.fetch = async function(resource, init) {
+      const urlStr = typeof resource === 'string' ? resource : resource?.url || '';
+      if (urlStr.includes('/d2l/api/')) {
+        const url = new URL(urlStr, window.location.origin);
+        const path = url.pathname;
+
+        if (mockState.latency > 0) {
+          await new Promise(r => setTimeout(r, mockState.latency));
+        }
+
+        if (mockState.rateLimitStatus === 429) {
+          logApiCall('GET', path, 429);
+          return new Response(JSON.stringify({ error: 'Too Many Requests' }), {
+            status: 429,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (mockState.authStatus === 401) {
+          logApiCall('GET', path, 401);
+          return new Response('<html><body>401 Unauthorized</body></html>', {
+            status: 401,
+            headers: { 'Content-Type': 'text/html' }
+          });
+        }
+
+        const pathMatch = path.match(/\/d2l\/api\/le\/[^/]+\/(\d+)\//);
+        const requestedCourseId = pathMatch ? pathMatch[1] : mockState.activeCourseId;
+        const course = COURSES_DATA[requestedCourseId] || COURSES_DATA[mockState.activeCourseId] || COURSES_DATA['88421'];
+
+        if (path.includes('/d2l/api/versions/')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify([
+            { ProductCode: 'lp', LatestVersion: '1.45' },
+            { ProductCode: 'le', LatestVersion: '1.74' }
+          ]), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (path.includes('/enrollments/myenrollments/')) {
+          logApiCall('GET', path, 200);
+          const items = Object.entries(COURSES_DATA).map(([id, c]) => ({
+            OrgUnit: { Id: parseInt(id, 10), Name: c.name, Code: c.code, Type: { Id: 3, Code: 'Course Offering', Name: 'Course Offering' } },
+            Access: { IsActive: true, StartDate: null, EndDate: null }
+          }));
+          return new Response(JSON.stringify({ Items: items, PagingInfo: { HasMoreItems: false } }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+
+        if (path.includes('/overview')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.overview), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/content/toc')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.toc), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/news/')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.news), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/dropbox/folders/')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.dropbox), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/quizzes/')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.quizzes), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/calendar/events/')) {
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.calendar), { headers: { 'Content-Type': 'application/json' } });
+        }
+        if (path.includes('/grades/values/myGradeValues/')) {
+          if (mockState.gradesStatus === 403) {
+            logApiCall('GET', path, 403);
+            return new Response(JSON.stringify({ error: 'Grades access restricted by instructor (HTTP 403 Forbidden)' }), {
+              status: 403,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          logApiCall('GET', path, 200);
+          return new Response(JSON.stringify(course.grades), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        if (path.includes('/content/topics/') && path.endsWith('/file')) {
+          logApiCall('GET', path, 200);
+          return new Response('Sample document extracted content for offline test environment', {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+          });
+        }
+
+        logApiCall('GET', path, 404);
+        return new Response(JSON.stringify({ error: 'Not Found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      return originalFetch.apply(this, arguments);
+    };
+
+    // --- Service Worker Registration ---
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('./mock-sw.js').then((reg) => {
+        console.log('[Mock D2L] Service Worker registered for scope:', reg.scope);
+      }).catch(err => {
+        console.warn('[Mock D2L] SW registration failed (fallback active):', err);
+      });
+    }
+
+    // --- UI Controls Binding ---
+    function syncSwConfig() {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'UPDATE_MOCK_CONFIG',
+          payload: {
+            activeCourseId: mockState.activeCourseId,
+            authStatus: mockState.authStatus,
+            gradesStatus: mockState.gradesStatus,
+            rateLimitStatus: mockState.rateLimitStatus,
+            latency: mockState.latency
+          }
+        });
+      }
+    }
+
+    document.getElementById('control-course-select').addEventListener('change', (e) => {
+      mockState.activeCourseId = e.target.value;
+      const c = COURSES_DATA[mockState.activeCourseId];
+      if (c) {
+        document.getElementById('course-title-heading').textContent = c.name + ' (Fall 2026)';
+        document.getElementById('course-ou-display').textContent = mockState.activeCourseId;
+        const url = new URL(window.location.href);
+        url.searchParams.set('ou', mockState.activeCourseId);
+        window.history.replaceState({}, '', url.toString());
+      }
+      syncSwConfig();
+    });
+
+    document.getElementById('control-auth-select').addEventListener('change', (e) => {
+      mockState.authStatus = parseInt(e.target.value, 10);
+      syncSwConfig();
+    });
+
+    document.getElementById('control-grades-select').addEventListener('change', (e) => {
+      mockState.gradesStatus = parseInt(e.target.value, 10);
+      syncSwConfig();
+    });
+
+    document.getElementById('control-ratelimit-select').addEventListener('change', (e) => {
+      mockState.rateLimitStatus = parseInt(e.target.value, 10);
+      syncSwConfig();
+    });
+
+    document.getElementById('control-latency-select').addEventListener('change', (e) => {
+      mockState.latency = parseInt(e.target.value, 10);
+      syncSwConfig();
+    });
+
+    document.getElementById('btn-trigger-hotkey').addEventListener('click', () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'b',
+        code: 'KeyB',
+        altKey: true,
+        bubbles: true,
+        cancelable: true
+      }));
+    });
+
+    document.getElementById('btn-clear-cache').addEventListener('click', () => {
+      if (window.indexedDB) {
+        window.indexedDB.deleteDatabase('brightspace_ai_helper_db');
+      }
+      localStorage.clear();
+      alert('IndexedDB and localStorage cleared!');
+    });
+  </script>
+</body>
+</html>
