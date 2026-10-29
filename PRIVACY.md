@@ -25,6 +25,8 @@ When you ask a question, the extension sends the following to the BS Helper serv
 
 The server adds instructions and forwards this to an AI provider (currently **Google Gemini**). The answer is sent back to you. The server **does not save** the question, the course content or the answer, and does not write them to its logs. The AI provider processes the data under its own terms for paid API use, which do not allow it to use the data to train its models. It may keep the data for a limited time to detect abuse.
 
+**Using your own Gemini API key (optional).** If you enter your own Google Gemini API key in Settings, your questions and course excerpts are sent directly from your browser to Google instead of to the BS Helper server, and Google's terms for your key apply. The key is stored only in your browser (`chrome.storage.local`) and is never sent to the BS Helper server.
+
 **Do not include sensitive personal information** (for example health details or other people's data) in your questions or files.
 
 ## 3. Data stored on the server
@@ -43,7 +45,7 @@ Encrypted backups of the server database (which contains the account data above,
 ## 4. Who handles your data
 
 - **The server host:** a rented virtual private server (VPS) that runs the BS Helper server.
-- **The AI provider:** Google (Gemini API), only for answering questions (section 2).
+- **The AI provider:** Google (Gemini API), only for answering questions (section 2), either through the BS Helper server or directly with your own key.
 - **An email delivery service:** only to send sign-up and reset codes to your email address.
 
 Your data is **never sold**, never used for advertising, and never shared with anyone else unless the law requires it. The extension has no analytics or tracking.
